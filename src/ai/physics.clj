@@ -15,16 +15,16 @@
 
 (defprotocol Kinematics
 	"Movements of bodies"
-	(move [b] "Moves body one time step")
+	(move [b dt] "Moves body one time step")
 	(collide [b] "Handles body collisions")
 )
 
 (extend-protocol Kinematics
 	Particle
-	(move [b]
+	(move [b dt]
 		(let [
-			vel (utils/add (:velocity b) (utils/div (:accel b) 60.0))
-			pos (utils/add (:position b) (utils/div (:velocity b) 60.0))
+			vel (utils/add (:velocity b) (utils/mul (:accel b) dt))
+			pos (utils/add (:position b) (utils/mul (:velocity b) dt))
 			]
 			(assoc b :velocity vel :position pos)
 		)

@@ -17,8 +17,9 @@
   (:gen-class)
 )
 
-(def framerate 60)
-(def n-particles 10)
+(def FPS 60)
+(def DT (/ 1.0 FPS))
+(def N-ENEMIES 10)
 (def field {:x1 0.0 :x2 1.0 :y1 0.0 :y2 1.0 :window-scale 500})
 (def safe-color [0 128 255])
 (def unsafe-color [255 0 0])
@@ -28,15 +29,15 @@
   {
     :enemies
     (vec
-      (for [i (range n-particles)]
+      (for [i (range N-ENEMIES)]
         (let [
-            angle (* i (/ (* Math/PI 2.0) n-particles))
+            angle (* i (/ (* Math/PI 2.0) N-ENEMIES))
             speed 0.5
             x-center (/ (- (:x2 field) (:x1 field)) 2.0)
             x-center (/ (- (:y2 field) (:y1 field)) 2.0)
             starting-distance (+ 0.025 0.025)
-            velocity (Vector2D. (* speed (Math/sin angle)) (* speed (Math/cos angle))) ; velocity
-            position (Vector2D. (+ x-center (* starting-distance (Math/sin angle))) (+ x-center (* starting-distance (Math/cos angle)))) ; position
+            velocity (Vector2D. (* speed (Math/sin angle)) (* speed (Math/cos angle)))
+            position (Vector2D. (+ x-center (* starting-distance (Math/sin angle))) (+ x-center (* starting-distance (Math/cos angle))))
           ]
           (Particle. 
             position
@@ -64,7 +65,7 @@
 )
 
 (defn setup []
-  (q/frame-rate framerate)
+  (q/frame-rate FPS)
   (q/color-mode :rgb)
   (q/no-stroke)
   state
@@ -121,7 +122,7 @@
   (update-in
     state
     [:player]
-    physics/move
+    (fn [b] (physics/move b DT))
   )
 )
 
@@ -131,7 +132,7 @@
   :enemies
   (vec
     (map 
-      physics/move
+      (fn [b] (physics/move b DT))
       (:enemies state)
       )
     )
@@ -147,8 +148,8 @@
 (defn update-score [state]
   (if
     (attacking? (:enemies state) (:player state))
-    (assoc-in (assoc-in state [:player :color] unsafe-color) [:player :score] (- (:score (:player state)) (/ (:attack-rate state) framerate)))
-    (assoc-in (assoc-in state [:player :color] safe-color) [:player :score] (+ (:score (:player state)) (/ (:recovery-rate state) framerate)))
+    (assoc-in (assoc-in state [:player :color] unsafe-color) [:player :score] (- (:score (:player state)) (* (:attack-rate state) DT)))
+    (assoc-in (assoc-in state [:player :color] safe-color) [:player :score] (+ (:score (:player state)) (* (:recovery-rate state) DT)))
   )
 )
 
@@ -170,13 +171,14 @@
   )
 )
 
-(defn key-released [state key]
+(defn key-released [_state key]
   (case (:key key)
-  :left (assoc-in state [:player :accel :x] 0.0)
-  :right (assoc-in state [:player :accel :x] 0.0)
-  :down (assoc-in state [:player :accel :y] 0.0)
-  :up (assoc-in state [:player :accel :y] 0.0)
-  state
+  :left (assoc-in _state [:player :accel :x] 0.0)
+  :right (assoc-in _state [:player :accel :x] 0.0)
+  :down (assoc-in _state [:player :accel :y] 0.0)
+  :up (assoc-in _state [:player :accel :y] 0.0)
+  :r state
+  _state
   )
 )
 
