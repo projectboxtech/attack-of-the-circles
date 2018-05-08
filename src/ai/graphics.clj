@@ -19,5 +19,5 @@
   (apply q/fill [255 255 255])
   (q/text-size 20)
   (q/text (str "score = " (format "%.1f" (:score (:player state)))) 0 (q/height))
-  ; (q/save-frame "./out/frames/####.png")
+  ; (q/save-frame "./out/frames/frame####.png") ; ffmpeg -r 60 -i %04d.png -c:v huffyuv test.avi
 )
